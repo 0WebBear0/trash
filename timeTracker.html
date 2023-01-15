@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+				content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>TimeTracker</title>
+</head>
+<body>
+<div
+	style="width: 100%; height: 100%; min-height: 90vh; display: flex; align-items: center; justify-content: center; flex-direction: column">
+	<div style="border: solid 2px; border-radius: 5px; padding: 30px; display: flex; flex-direction: column">
+		<form id="radio" style="padding: 10px 0; display: flex; flex-wrap: wrap">
+			<div><input id="r1" type="radio" name="sOf" value="Старт" checked><label for="r1">Старт работы</label></div>
+			<div><input id="r2" type="radio" name="sOf" value="Конец"><label for="r2">Конец работы</label></div>
+		</form>
+		<input placeholder="Запишите сообщение для записи" type="text" name="onp" id="inp"
+					 style="margin-bottom: 10px; height: 25px; width: 100%;">
+		<button id="btn" disabled style="width: 100%;">Записать</button>
+	</div>
+	<div id="list"
+			 style="margin-top: 20px; border: solid 2px; border-radius: 5px; padding: 30px; display: none; flex-direction: column;">
+		<ul id="list_ul">
+
+		</ul>
+	</div>
+</div>
+</body>
+</html>
+<script>
+
+	// работа с сохранением, получением и удалением данных
+	const getLocal = () => JSON.parse(localStorage.getItem("data"))
+
+	function setLocal(data) {
+		let dataLocal
+
+		if (getLocal() !== null) {
+			dataLocal = getLocal()
+		} else dataLocal = []
+
+		dataLocal.push(data)
+
+		localStorage.setItem("data", JSON.stringify(dataLocal))
+	}
+
+	function deleteLocal(id) {
+		let dataLocal
+		if (getLocal() !== null) {
+			if (getLocal().length > 0) {
+				dataLocal = getLocal()
+				dataLocal.splice(id, 1)
+				localStorage.setItem("data", JSON.stringify(dataLocal))
+			}
+		}
+	}
+
+	<!-- рендер из localStorage	-->
+	updateData()
+
+	document.getElementById("btn").addEventListener("click", () => {
+		addDataInSore()
+	})
+
+	document.getElementById("inp").addEventListener("keyup", (ev) => {
+		if (document.getElementById("inp").value.length > 0) {
+			document.getElementById("btn").disabled = false
+			if (ev.key === "Enter") {
+				addDataInSore()
+			}
+		} else document.getElementById("btn").disabled = true
+	})
+
+	function deleteF() {
+		const allDeleteBtn = document.querySelectorAll(".del")
+
+		allDeleteBtn.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				deleteLocal(btn.value)
+				updateData()
+			})
+		})
+
+
+	}
+
+	function addDataInSore() {
+		const inputData = () => document.getElementById("inp").value
+		const startOrFinish = document.getElementById("radio").elements["sOf"].value
+		let id
+		let month = []
+		month[0] = "Январь"
+		month[1] = "Февраль"
+		month[2] = "Март"
+		month[3] = "Апрель"
+		month[4] = "Май"
+		month[5] = "Июнь"
+		month[6] = "Июль"
+		month[7] = "Август"
+		month[8] = "Сентябрь"
+		month[9] = "Октябрь"
+		month[10] = "Ноябрь"
+		month[11] = "Декабрь"
+
+		if (getLocal() !== null) {
+			id = getLocal().length
+		} else id = 0
+		if (inputData().length > 0) {
+			const date = new Date()
+			const data = {
+				id: id,
+				startOrFinish: startOrFinish,
+				inputData: inputData(),
+				month: month[date.getMonth()],
+				day: date.getDate(),
+				hour: date.getHours(),
+				minute: date.getMinutes()
+			}
+			setLocal(JSON.stringify(data))
+			document.getElementById("inp").value = ""
+			updateData()
+		}
+	}
+
+	function updateData() {
+		const dataLocal = getLocal()
+
+		if (dataLocal !== null) {
+			if (dataLocal.length > 0) {
+
+				document.getElementById("list").style.display = "flex"
+
+
+				//обнуление элемента
+				document.getElementById("list_ul").innerHTML = ""
+
+				//рендер элементов
+				for (let i = 0; i < dataLocal.length; i++) {
+					dataLocal[i] = JSON.parse(dataLocal[i])
+					document.getElementById("list_ul").innerHTML +=
+						`<li style="display: flex; flex-direction: row; align-items: center" >
+								${dataLocal[i].startOrFinish}
+								<p style="padding-right: 5px; padding-left: 5px; color: midnightblue; font-size: 18px; font-weight: bold">${dataLocal[i].inputData}</p>
+								${dataLocal[i].month} ${dataLocal[i].day} --${dataLocal[i].hour}:${dataLocal[i].minute}--
+								<button class="del" id="del${i}" value="${i}" style="margin-left: 10px">delete</button>
+						</li>`
+				}
+			} else document.getElementById("list").style.display = "none"
+		}
+		//добавление кликов
+		deleteF()
+	}
+</script>
