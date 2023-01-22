@@ -1,0 +1,2 @@
+ssh-keygen -t rsa -f ~/.ssh/id_rsa
+vim ~/.ssh/id_rsa.pub
